@@ -30,7 +30,7 @@ export default function CommissionDashboard() {
         <Card>
           <CardContent className="p-4">
             <h2 className="text-lg font-semibold">Total Commission</h2>
-            <p className="text-xl font-bold text-green-600">${summary.total_commission}</p>
+            <p className="text-xl font-bold text-green-600">{'$' + summary.total_commission}</p>
           </CardContent>
         </Card>
         <Card>
@@ -42,7 +42,7 @@ export default function CommissionDashboard() {
         <Card>
           <CardContent className="p-4">
             <h2 className="text-lg font-semibold">Avg. Commission / Line</h2>
-            <p className="text-xl font-bold">${summary.average_commission_per_line}</p>
+            <p className="text-xl font-bold">{'$' + summary.average_commission_per_line}</p>
           </CardContent>
         </Card>
       </div>
@@ -76,7 +76,7 @@ export default function CommissionDashboard() {
                   <TableCell>{line.carrier}</TableCell>
                   <TableCell>{line.activation_date}</TableCell>
                   <TableCell>{line.line_description}</TableCell>
-                  <TableCell>${line.total_commission}</TableCell>
+                  <TableCell>{'$' + line.total_commission}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

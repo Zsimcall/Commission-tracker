@@ -26,7 +26,7 @@ class CommissionRecord(db.Model):
     commission_type = db.Column(db.String(50), nullable=True)
 
 def extract_phone_number(account_str):
-    match = re.match(r"^(\\d{10})", account_str)
+    match = re.match(r"^(\d{10})", account_str)
     return match.group(1) if match else None
 
 @app.route('/summary', methods=['GET'])
