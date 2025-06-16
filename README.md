@@ -1,7 +1,12 @@
 # Commission Tracker
 
-This repository contains an early prototype of a commission tracking
-tool with a Flask backend and a React-based frontend.
+This repository contains a prototype wireless commission tracking application.
 
-A minimal static page is provided under the `docs/` directory so the
-project can be served with GitHub Pages.
+The project currently includes:
+
+- **backend/** – a small Flask API prototype.
+- **frontend/** – a React interface used for testing CSV uploads and KPI display.
+- **docs/** – a static placeholder page used for GitHub Pages deployments.
+
+The implementation is incomplete but provides a starting point for parsing
+commission CSV reports and displaying aggregated information.

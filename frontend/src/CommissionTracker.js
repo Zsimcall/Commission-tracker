@@ -1,23 +1,30 @@
 import React, { useState, useEffect, useRef } from "react";
 import Papa from "papaparse";
-import dayjs from "dayjs";
 import html2pdf from "html2pdf.js";
+import Dashboard from "./Dashboard";
+import AllLines from "./AllLines";
+import LineDetail from "./LineDetail";
+import { db } from "./firebase";
+import { collection, getDocs, setDoc, doc } from "firebase/firestore";
 
 export default function CommissionTracker() {
   const [csvFile, setCsvFile] = useState(null);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
   const [linesData, setLinesData] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMdn, setSelectedMdn] = useState(null);
   const printRef = useRef();
 
   useEffect(() => {
-    const storedData = localStorage.getItem("commissionTrackerLines");
-    if (storedData) setLinesData(JSON.parse(storedData));
+    async function fetchLines() {
+      const snapshot = await getDocs(collection(db, "lines"));
+      const data = {};
+      snapshot.forEach((docSnap) => {
+        data[docSnap.id] = docSnap.data();
+      });
+      setLinesData(data);
+    }
+    fetchLines();
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem("commissionTrackerLines", JSON.stringify(linesData));
-  }, [linesData]);
 
   const parseCSV = () => {
     if (!csvFile) return;
@@ -25,7 +32,7 @@ export default function CommissionTracker() {
     Papa.parse(csvFile, {
       header: true,
       skipEmptyLines: true,
-      complete: (results) => {
+      complete: async (results) => {
         const data = results.data;
         const updatedLines = { ...linesData };
 
@@ -53,8 +60,11 @@ export default function CommissionTracker() {
           }
         }
 
+        for (const [mdn, line] of Object.entries(updatedLines)) {
+          await setDoc(doc(db, "lines", mdn), line);
+        }
+
         setLinesData(updatedLines);
-        setUploadSuccess(true);
       },
     });
   };
@@ -70,6 +80,19 @@ export default function CommissionTracker() {
       });
     });
     return { upfront, monthly, chargeback, activeLines };
+  };
+
+  const getMonthlyData = () => {
+    const months = {};
+    Object.values(linesData).forEach((line) => {
+      line.history.forEach((tx) => {
+        const m = tx.date.slice(0, 7); // YYYY-MM
+        if (!months[m]) months[m] = { upfront: 0, monthly: 0 };
+        if (tx.type === "ACT") months[m].upfront += tx.amount;
+        if (tx.type === "RESIDUAL") months[m].monthly += tx.amount;
+      });
+    });
+    return Object.entries(months).map(([month, values]) => ({ month, ...values }));
   };
 
   const exportToCSV = () => {
@@ -110,10 +133,7 @@ export default function CommissionTracker() {
   };
 
   const { upfront, monthly, chargeback, activeLines } = getKPIs();
-
-  const filteredLines = Object.entries(linesData).filter(([mdn]) =>
-    mdn.includes(searchQuery)
-  );
+  const monthlyData = getMonthlyData();
 
   return (
     <div className="p-6 max-w-6xl mx-auto font-sans">
@@ -124,39 +144,21 @@ export default function CommissionTracker() {
       <button onClick={exportToCSV} className="bg-green-600 text-white px-4 py-1 rounded mr-2">Export CSV</button>
       <button onClick={handleDownloadPDF} className="bg-purple-600 text-white px-4 py-1 rounded mr-2">Download PDF</button>
 
-      <div className="my-4 grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-4 rounded shadow">
-        <div><strong>Upfront:</strong><br/>${upfront.toFixed(2)}</div>
-        <div><strong>Monthly:</strong><br/>${monthly.toFixed(2)}</div>
-        <div><strong>Chargebacks:</strong><br/>${chargeback.toFixed(2)}</div>
-        <div><strong>Active Lines:</strong><br/>{activeLines}</div>
-      </div>
+      <Dashboard summary={{ upfront, monthly, chargeback, activeLines }} monthly={monthlyData} />
 
-      <input type="text" placeholder="Search MDN..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="border rounded px-2 py-1 mb-2" />
-
-      <div ref={printRef}>
-        <table className="w-full table-auto text-sm bg-white shadow rounded">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-2 border">MDN</th>
-              <th className="p-2 border">Customer</th>
-              <th className="p-2 border">Plan</th>
-              <th className="p-2 border">Status</th>
-              <th className="p-2 border">History Count</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredLines.map(([mdn, line]) => (
-              <tr key={mdn}>
-                <td className="p-2 border">{mdn}</td>
-                <td className="p-2 border">{line.customerName}</td>
-                <td className="p-2 border">{line.plan}</td>
-                <td className="p-2 border">{line.status}</td>
-                <td className="p-2 border">{line.history.length}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {selectedMdn ? (
+        <div>
+          <button className="text-blue-600 underline mb-2" onClick={() => setSelectedMdn(null)}>Back to all lines</button>
+          <LineDetail line={linesData[selectedMdn]} />
+        </div>
+      ) : (
+        <AllLines
+          lines={linesData}
+          onSelect={setSelectedMdn}
+          search={searchQuery}
+          setSearch={setSearchQuery}
+        />
+      )}
     </div>
   );
 }
