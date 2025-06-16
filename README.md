@@ -1,7 +1,7 @@
 # Commission Tracker
 
-This repository contains an early prototype of a commission tracking
-tool with a Flask backend and a React-based frontend.
+This project provides a simple commission tracking tool with a Flask backend and a React front‑end.
 
-A minimal static page is provided under the `docs/` directory so the
-project can be served with GitHub Pages.
+The `backend/` folder contains the API server, while the static React app
+is served from the `docs/` directory so it can be hosted on GitHub Pages.
+Open `docs/index.html` to try the dashboard.

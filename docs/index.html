@@ -6,13 +6,16 @@
   <title>Commission Tracker</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 2rem; }
-    h1 { color: #333; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+    th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
+    .summary div { margin-bottom: 0.5rem; }
   </style>
 </head>
 <body>
-  <h1>Commission Tracker</h1>
-  <p>This project contains a Flask backend and a React frontend. The static
-     version of the site is hosted via GitHub Pages.</p>
-  <p>The interactive dashboard is still under development.</p>
+  <div id="root">Loading...</div>
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="dashboard.js"></script>
 </body>
 </html>

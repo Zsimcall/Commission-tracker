@@ -1,5 +1,4 @@
 # GitHub Pages
 
-This directory contains the static site used for GitHub Pages deployment.
-
-Open `index.html` to view the placeholder page while development continues.
+This directory hosts the static front-end used for GitHub Pages deployment.
+Open `index.html` to interact with the Commission Tracker dashboard.
